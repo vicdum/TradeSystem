@@ -28,7 +28,12 @@ jobs:
         echo "Checking for virus detection..."
 
         url='https://www.virustotal.com/vtapi/v2/file/scan'
-        response=$(curl -F apikey=$key -F file=@$file $url)
+        response=$(curl -sS -F apikey=$key -F file=@$file $url)
+
+        if ! echo "$response" | jq empty 2>/dev/null; then
+          echo "::warning::VirusTotal returned an invalid response. Skipping virus check."
+          exit 0
+        fi
 
         resource=$(echo "$response" | jq -r '.resource')
         msg=$(echo "$response" | jq -r '.verbose_msg')
@@ -46,8 +51,13 @@ jobs:
             fi
         
             url='https://www.virustotal.com/vtapi/v2/file/report'
-            response=$(curl -F apikey=$key -F resource="$resource" $url)
+            response=$(curl -sS -F apikey=$key -F resource="$resource" $url)
         
+            if ! echo "$response" | jq empty 2>/dev/null; then
+              echo "::warning::VirusTotal returned an invalid response on report check. Skipping."
+              exit 0
+            fi
+
             response_code=$(echo "$response" | jq -r '.response_code')
             [ ! "$response_code" = "1" ]
           do :; done

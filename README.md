@@ -3,7 +3,7 @@
 # API
 When working with the API of TradeSystem, please note the library relocation as stated below.
 
-## Maven
+## Maven 
 ```xml
 <repository>
   <id>jitpack.io</id>
